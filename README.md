@@ -10,8 +10,8 @@ Um projeto de **História com Dados** que visualiza a consistência e a letalida
 
 A aplicação foi construída com um fluxo focado na análise de dados: todo o processo de *web scraping*, limpeza e os cálculos estatísticos pesados são resolvidos no **R**, que atua como o motor analítico do projeto. O script exporta tudo "mastigado" em um único arquivo visual. Os gráficos, desenhados com **D3.js**, rodam diretamente no navegador de quem acessa, garantindo uma experiência rápida e fluida sem precisar de bancos de dados ou servidores complexos rodando por trás.
 
-🔗 **[Acesse o Painel Interativo Ao Vivo no GitHub Pages]**  
-📖 **[Leia o artigo completo sobre os bastidores no Medium]**
+🔗 **[Acesse o painel no GitHub Pages](https://ojeancarlo.github.io/githubCR7/)**  
+📖 **[Leia o artigo completo sobre os bastidores no Medium](https://medium.com/@ojeancarlo/o-github-de-cristiano-ronaldo-mapeando-a-const%C3%A2ncia-do-artilheiro-com-r-e-d3-js-7453f8927afa)**
 
 ---
 
@@ -44,4 +44,4 @@ A aplicação foi construída com um fluxo focado na análise de dados: todo o p
 
 1. Clone este repositório em sua máquina:
 ```bash
-git clone [https://github.com/ojeancarlo/github-cr7.git](https://github.com/ojeancarlo/github-cr7.git)
+git clone [https://github.com/ojeancarlo/github-cr7.git](https://github.com/ojeancarlo/githubCR7.git)
