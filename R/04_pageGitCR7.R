@@ -91,8 +91,19 @@ if(length(semanas_com_gol) > 0) {
 ano_inicio <- min(lubridate::year(dados_dia$data))
 ano_fim <- max(lubridate::year(dados_dia$data))
 
-## capturando a data de atualização com base no último gol registrado
-data_atualizacao <- format(max(dados_dia$data, na.rm = TRUE), "%d/%m/%Y")
+## capturando a data de atualização com base no último gol de qualquer jogador da base
+#data_atualizacao <- format(max(as.Date(dbgols$data), na.rm = TRUE), "%d/%m/%Y")
+
+## extraindo a data de atualização direto da página do Sabino Statistics
+url_atualizacao <- "https://docs.ufpr.br/~mmsabino/sstatistics/atualizacao.html"
+
+data_atualizacao_raw <- rvest::read_html(url_atualizacao) |>
+  rvest::html_text() |>
+  # Regex blindada: caça 1 ou 2 números, seguidos de ponto/barra/traço, e o ano
+  stringr::str_extract("\\d{1,2}[./-]\\d{1,2}[./-]\\d{2,4}")
+
+# Substitui os pontos por barras para manter o visual bonito no painel (01/06/2026)
+data_atualizacao <- format(lubridate::dmy(data_atualizacao_raw), "%d/%m/%Y")
 
 ## construindo o dataframe do calendário completo
 calendario <- tibble::tibble(
