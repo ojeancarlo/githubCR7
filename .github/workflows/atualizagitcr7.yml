@@ -34,7 +34,7 @@ jobs:
 
       - name: Instala pacotes R
         run: |
-          install.packages(c("tidyverse", "rvest", "lubridate", "jsonlite", "glue"))
+          install.packages(c("tidyverse", "rvest", "lubridate", "jsonlite", "glue", "httr"))
         shell: Rscript {0}
 
       - name: Executa o pipleine

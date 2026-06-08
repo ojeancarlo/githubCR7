@@ -6,7 +6,17 @@ extrair_dados_jogador <- function(nome_jogador, link_atual) {
   Sys.sleep(1)
 
   tryCatch({
-    pagina <- rvest::read_html(link_atual)
+
+    requisicao <- httr::GET(
+      link_atual,
+      httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+      httr::timeout(60)
+    )
+
+    # lendo a page
+    pagina <- rvest::read_html(requisicao)
+
+    ## funcão interna para extrair cada blocao e separar os textos automaticamente
 
     ## funcão interna para extrair cada blocao e separar os textos automaticamente
     extrair_coluna <- function(indice) {
