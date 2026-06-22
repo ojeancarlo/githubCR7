@@ -17,8 +17,6 @@ extrair_dados_jogador <- function(nome_jogador, link_atual) {
     pagina <- rvest::read_html(requisicao)
 
     ## funcão interna para extrair cada blocao e separar os textos automaticamente
-
-    ## funcão interna para extrair cada blocao e separar os textos automaticamente
     extrair_coluna <- function(indice) {
       pagina |>
         rvest::html_element(xpath = sprintf("//table//td[%d]", indice)) |>

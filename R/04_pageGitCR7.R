@@ -91,9 +91,6 @@ if(length(semanas_com_gol) > 0) {
 ano_inicio <- min(lubridate::year(dados_dia$data))
 ano_fim <- max(lubridate::year(dados_dia$data))
 
-## capturando a data de atualização com base no último gol de qualquer jogador da base
-#data_atualizacao <- format(max(as.Date(dbgols$data), na.rm = TRUE), "%d/%m/%Y")
-
 ## extraindo a data de atualização direto da página do Sabino Statistics
 url_atualizacao <- "https://docs.ufpr.br/~mmsabino/sstatistics/atualizacao.html"
 
@@ -260,6 +257,35 @@ vitimas_selecao_html <- paste0(
   "<span style='font-size: 13px; color: var(--text-muted);'>", vitimas_selecao_top3$gols, " gols</span>",
   "</div>", collapse = ""
 )
+
+
+# construindo o calendário perpétuo (Nova Aba) ----------------------------
+
+## agrupando os gols marcados no mesmo dia e mes (ignorando o ano)
+calendario_aniversario <- base_cr7 |>
+  dplyr::mutate(
+    mes = lubridate::month(data_limpa),
+    dia = lubridate::day(data_limpa)
+  ) |>
+  dplyr::group_by(mes, dia) |>
+  dplyr::summarise(
+    total_gols = sum(gols, na.rm = TRUE),
+    anos_marcados = paste(unique(lubridate::year(data_limpa)), collapse = ", "),
+    .groups = "drop"
+  )
+
+## criando um grid universal de 365 dias para o mapa de calor
+grid_calendario <- expand.grid(mes = 1:12, dia = 1:31) |>
+  ## removendo os dias do ano que nao existem no calendario real
+  dplyr::filter(!(mes == 2 & dia > 29) &
+                  !(mes %in% c(4, 6, 9, 11) & dia == 31)) |>
+  dplyr::left_join(calendario_aniversario, by = c("mes", "dia")) |>
+  dplyr::mutate(
+    marcou = ifelse(!is.na(total_gols) & total_gols > 0, 1, 0),
+    total_gols = tidyr::replace_na(total_gols, 0),
+    anos_marcados = tidyr::replace_na(anos_marcados, "")
+  ) |>
+  dplyr::arrange(mes, dia)
 
 
 # construindo os dados históricos do top 10 -------------------------------
@@ -447,7 +473,8 @@ listas_df <- list(
   intensidade = intensidade_top10,
   dias_semana = dias_semana_comp,
   primeiro_gol_competicao = primeiro_gol_competicao,
-  gols_por_comp = gols_por_comp
+  gols_por_comp = gols_por_comp,
+  calendario_aniversario = grid_calendario
 )
 
 ## converter tudo para json
@@ -513,7 +540,7 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
 
   .viz-container { width: 100%; margin: 0 auto; padding: 20px 0; }
 
-  .tabs-menu { display: flex; gap: 32px; border-bottom: 1px solid var(--lines); margin-bottom: 32px; }
+  .tabs-menu { display: flex; gap: 32px; border-bottom: 1px solid var(--lines); margin-bottom: 32px; flex-wrap: wrap; }
   .tab-link { background: none; border: none; padding: 12px 0; font-family: "Inter", sans-serif; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
   .tab-link:hover { color: var(--text-main); }
   .tab-link.active { color: var(--accent); border-bottom-color: var(--accent); }
@@ -620,7 +647,6 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
         </p>
       </div>
 
-      <!-- FOTO/GIF -->
       <div style="
         width: 220px;
         height: 220px;
@@ -682,6 +708,7 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
   <div class="tabs-menu">
     <button class="tab-link active" onclick="switchTab(event, 'aba-cr7')">GitHub do CR7</button>
     <button class="tab-link" onclick="switchTab(event, 'aba-top10')">Análises Gerais</button>
+    <button class="tab-link" onclick="switchTab(event, 'aba-calendario')">Calendário CR7</button>
   </div>
 
   <div id="aba-cr7" class="tab-panel active">
@@ -839,6 +866,20 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
 
   </div>
 
+  <div id="aba-calendario" class="tab-panel">
+    <div class="nexo-title">O Calendário Perpétuo</div>
+    <div class="nexo-subtitle">Existe algum dia no ano em que CR7 nunca marcou gol? Mapeamos todos os dias da sua carreira, independentemente do ano. Quadrados vermelhos indicam datas em que ele já balançou as redes pelo menos uma vez em toda a sua história.</div>
+
+    <div class="legend-row" style="margin-top: 24px;">
+      <div class="legend-items">
+        <div class="legend-item"><div class="legend-box" style="background:#F2EFEB; border:1px solid #E5E5E5"></div>Ainda não marcou</div>
+        <div class="legend-item"><div class="legend-box" style="background:var(--accent)"></div>Já marcou gol</div>
+      </div>
+    </div>
+
+    <div class="nexo-box" id="nexo-calendario"></div>
+  </div>
+
   <footer class="footer">
     Desenvolvido por <a href="https://github.com/ojeancarlo/" target="_blank">Jean Carlo da Silva</a> usando R e D3.js.<br/>
     Fonte de dados: <a href="https://docs.ufpr.br/~mmsabino/sstatistics/" target="_blank"> Docs UFPr - Sabino Statistics</a>.
@@ -885,6 +926,7 @@ var DADOS_EFI = <<jsons$intensidade>>;
 var DADOS_RADAR = <<jsons$dias_semana>>;
 var PRIMEIROS_GOLS = <<jsons$primeiro_gol_competicao>>;
 var GOLS_POR_COMP = <<jsons$gols_por_comp>>;
+var DADOS_CALENDARIO = <<jsons$calendario_aniversario>>;
 
 var marcosMap = {};
 MARCOS.forEach(function(m) { marcosMap[m.data_str] = m; });
@@ -1640,7 +1682,73 @@ function renderTop10Charts() {
 
   }
 
+function renderCalendario() {
+  var marginCal = {top: 40, right: 20, bottom: 20, left: 80},
+      widthCal = 1000 - marginCal.left - marginCal.right,
+      heightCal = 400 - marginCal.top - marginCal.bottom;
+
+  var svgCal = d3.select("#nexo-calendario").append("svg")
+      .attr("viewBox", `0 0 ${widthCal + marginCal.left + marginCal.right} ${heightCal + marginCal.top + marginCal.bottom}`)
+      .append("g")
+      .attr("transform", "translate(" + marginCal.left + "," + marginCal.top + ")");
+
+  var meses_nomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  var dias_labels = d3.range(1, 32);
+
+  var xCal = d3.scaleBand().domain(dias_labels).range([0, widthCal]).padding(0.05);
+  var yCal = d3.scaleBand().domain(d3.range(1, 13)).range([0, heightCal]).padding(0.1);
+
+  svgCal.append("g")
+      .attr("transform", "translate(0,-10)")
+      .call(d3.axisTop(xCal).tickSize(0))
+      .select(".domain").remove();
+
+  svgCal.append("g")
+      .call(d3.axisLeft(yCal).tickFormat(d => meses_nomes[d-1]).tickSize(0))
+      .select(".domain").remove();
+
+  svgCal.selectAll(".tick text")
+      .style("font-family", "Inter, sans-serif")
+      .style("font-size", "12px")
+      .style("font-weight", "600")
+      .style("fill", "#475569");
+
+  svgCal.selectAll(".cell-cal")
+      .data(DADOS_CALENDARIO)
+      .enter().append("rect")
+      .attr("class", "cell-cal")
+      .attr("x", function(d) { return xCal(d.dia); })
+      .attr("y", function(d) { return yCal(d.mes); })
+      .attr("width", xCal.bandwidth())
+      .attr("height", yCal.bandwidth())
+      .attr("fill", function(d) { return d.marcou === 1 ? "var(--accent)" : "#F2EFEB"; })
+      .attr("rx", 2)
+      .attr("ry", 2)
+      .style("cursor", function(d) { return d.marcou === 1 ? "pointer" : "default"; })
+      .on("mouseover", function(event, d) {
+         if(d.marcou === 1) {
+             tipNexo.style.opacity = "1";
+             tipNexo.innerHTML = "<strong>" + d.dia + " de " + meses_nomes[d.mes-1] + "</strong><br/>" +
+                                 "Gols marcados: <span style='color:var(--accent);font-weight:700;'>" + d.total_gols + "</span><br/>" +
+                                 "Anos: <span style='font-size:10px; color:#666;'>" + d.anos_marcados + "</span>";
+         } else {
+             tipNexo.style.opacity = "1";
+             tipNexo.innerHTML = "<strong>" + d.dia + " de " + meses_nomes[d.mes-1] + "</strong><br/><span style='color:#666;'>Nenhum gol na carreira.</span>";
+         }
+         d3.select(this).attr("stroke", "#111").attr("stroke-width", 1.5);
+      })
+      .on("mousemove", function(event) {
+         tipNexo.style.left = (event.pageX + 12) + "px";
+         tipNexo.style.top = (event.pageY - 12) + "px";
+      })
+      .on("mouseleave", function() {
+         tipNexo.style.opacity = "0";
+         d3.select(this).attr("stroke", "none");
+      });
+}
+
 renderTop10Charts();
+renderCalendario();
 </script>
 </body>
 </html>
