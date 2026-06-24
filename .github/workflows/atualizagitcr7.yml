@@ -51,3 +51,4 @@ jobs:
           # O comando '|| echo' impede que o script trave se não houver mudanças no arquivo
           git commit -m "Update: Atualização da base de gols do CR7" || echo "Sem mudanças para commitar"
           git push
+

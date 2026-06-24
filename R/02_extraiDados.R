@@ -3,14 +3,31 @@
 ## definindo a pagina e fazendo a requisicao com disfarce de navegador e timeout estendido
 page <- "https://docs.ufpr.br/~mmsabino/sstatistics/gol_oficial.html"
 
+## configurando o ScrapingBee
+api_key <- Sys.getenv("SCRAPINGBEE_KEY")
+
+api_url <- paste0(
+  "https://app.scrapingbee.com/api/v1/?api_key=", api_key,
+  "&url=", URLencode(page, reserved = TRUE),
+  "&render_js=false"
+)
+
+## requisitando via proxy
 response <- httr::GET(
-  page,
-  httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
-  httr::timeout(60),
-  httr::config(connecttimeout = 60)
+  api_url,
+  httr::timeout(60)
 )
 
 content <- rvest::read_html(response)
+
+#response <- httr::GET(
+#  page,
+#  httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+#  httr::timeout(60),
+#  httr::config(connecttimeout = 60)
+#)
+
+#content <- rvest::read_html(response)
 
 ## buscando a tabela base
 table <- rvest::html_table(content)
