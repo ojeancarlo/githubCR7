@@ -210,7 +210,7 @@
       </span>
 
       <span class="date">
-        Data de atualização da base: 22/06/2026
+        Data de atualização da base: 24/06/2026
       </span>
     </div>
 
@@ -380,7 +380,7 @@
   <div id="aba-calendario" class="tab-panel">
     <div class="nexo-title">O Calendário Perpétuo</div>
     <div class="nexo-subtitle">Existe algum dia no ano em que CR7 nunca marcou gol? Mapeamos todos os dias da sua carreira, independentemente do ano. Quadrados vermelhos indicam datas em que ele já balançou as redes pelo menos uma vez em toda a sua história.</div>
-    
+
     <div class="legend-row" style="margin-top: 24px;">
       <div class="legend-items">
         <div class="legend-item"><div class="legend-box" style="background:#F2EFEB; border:1px solid #E5E5E5"></div>Ainda não marcou</div>
@@ -656,7 +656,7 @@ function moveTip(event) {
   tip.style.left = x + "px"; tip.style.top = y + "px";
   }
 
-function hideTip() { tip.style.opacity = "0"; }
+function hideTip() { tip.style.opacity = "0"; tip.style.top = "-9999px"; }
 
 anos.forEach(function(ano, ai) {
   var baseY = ai * (ROW_H + YGAP);
@@ -765,7 +765,7 @@ function renderTop10Charts() {
          tipNexo.style.left = (event.pageX + 12) + "px";
          tipNexo.style.top = (event.pageY - 12) + "px";
       })
-      .on("mouseleave", function() { tipNexo.style.opacity = "0"; });
+      .on("mouseleave", function() { tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px"; });
 
   svgH.selectAll(".cell-text")
       .data(DADOS_TOP10.filter(function(d) { return d.gols_anuais > 0; }))
@@ -855,7 +855,7 @@ function renderTop10Charts() {
          tipNexo.style.left = (event.pageX + 12) + "px";
          tipNexo.style.top = (event.pageY - 12) + "px";
       })
-      .on("mouseleave", function() { tipNexo.style.opacity = "0"; });
+      .on("mouseleave", function() { tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px"; });
 
   var marginA = {top: 10, right: 80, bottom: 20, left: 140},
       widthA = 500 - marginA.left - marginA.right,
@@ -1012,7 +1012,7 @@ function renderTop10Charts() {
          tipNexo.style.left = (event.pageX + 12) + "px";
          tipNexo.style.top = (event.pageY - 12) + "px";
       })
-      .on("mouseleave", function() { tipNexo.style.opacity = "0"; });
+      .on("mouseleave", function() { tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px"; });
 
   svgR.append("g").selectAll("g").data(DADOS_RADAR).enter().append("g")
       .attr("text-anchor", function(d) { return (xR(d.dia) + xR.bandwidth()/2 + Math.PI) % (2*Math.PI) < Math.PI ? "end" : "start"; })
@@ -1077,7 +1077,7 @@ function renderTop10Charts() {
           tipNexo.style.left = (event.pageX + 12) + "px";
           tipNexo.style.top = (event.pageY - 12) + "px";
       })
-      .on("mouseleave", function() { tipNexo.style.opacity = "0"; });
+      .on("mouseleave", function() { tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px"; });
 
   svgF.selectAll(".labelF")
       .data(stackData)
@@ -1163,7 +1163,7 @@ function renderTop10Charts() {
       .on("mouseleave", function(event, d) {
          d3.select(this).attr("fill", "url(#gradC)");
          d3.select(this.parentNode).select(".bullet-" + d.competicao.replace(/[^a-zA-Z0-9]/g, "")).attr("r", 5).attr("fill", "#B03020");
-         tipNexo.style.opacity = "0";
+         tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px";
       });
 
   svgC.selectAll(".bulletC")
@@ -1253,7 +1253,7 @@ function renderCalendario() {
          tipNexo.style.top = (event.pageY - 12) + "px";
       })
       .on("mouseleave", function() {
-         tipNexo.style.opacity = "0";
+         tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px";
          d3.select(this).attr("stroke", "none");
       });
 }

@@ -6,7 +6,8 @@ page <- "https://docs.ufpr.br/~mmsabino/sstatistics/gol_oficial.html"
 response <- httr::GET(
   page,
   httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
-  httr::timeout(60)
+  httr::timeout(60),
+  httr::config(connecttimeout = 60)
 )
 
 content <- rvest::read_html(response)

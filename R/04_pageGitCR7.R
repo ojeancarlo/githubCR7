@@ -94,9 +94,15 @@ ano_fim <- max(lubridate::year(dados_dia$data))
 ## extraindo a data de atualização direto da página do Sabino Statistics
 url_atualizacao <- "https://docs.ufpr.br/~mmsabino/sstatistics/atualizacao.html"
 
-data_atualizacao_raw <- rvest::read_html(url_atualizacao) |>
+res_atualizacao <- httr::GET(
+  url_atualizacao,
+  httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+  httr::timeout(60),
+  httr::config(connecttimeout = 60)
+)
+
+data_atualizacao_raw <- rvest::read_html(res_atualizacao) |>
   rvest::html_text() |>
-  # Regex blindada: caça 1 ou 2 números, seguidos de ponto/barra/traço, e o ano
   stringr::str_extract("\\d{1,2}[./-]\\d{1,2}[./-]\\d{2,4}")
 
 # Substitui os pontos por barras para manter o visual bonito no painel (01/06/2026)
@@ -1145,7 +1151,7 @@ function moveTip(event) {
   tip.style.left = x + "px"; tip.style.top = y + "px";
   }
 
-function hideTip() { tip.style.opacity = "0"; }
+function hideTip() { tip.style.opacity = "0"; tip.style.top = "-9999px"; }
 
 anos.forEach(function(ano, ai) {
   var baseY = ai * (ROW_H + YGAP);
@@ -1254,7 +1260,7 @@ function renderTop10Charts() {
          tipNexo.style.left = (event.pageX + 12) + "px";
          tipNexo.style.top = (event.pageY - 12) + "px";
       })
-      .on("mouseleave", function() { tipNexo.style.opacity = "0"; });
+      .on("mouseleave", function() { tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px"; });
 
   svgH.selectAll(".cell-text")
       .data(DADOS_TOP10.filter(function(d) { return d.gols_anuais > 0; }))
@@ -1344,7 +1350,7 @@ function renderTop10Charts() {
          tipNexo.style.left = (event.pageX + 12) + "px";
          tipNexo.style.top = (event.pageY - 12) + "px";
       })
-      .on("mouseleave", function() { tipNexo.style.opacity = "0"; });
+      .on("mouseleave", function() { tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px"; });
 
   var marginA = {top: 10, right: 80, bottom: 20, left: 140},
       widthA = 500 - marginA.left - marginA.right,
@@ -1501,7 +1507,7 @@ function renderTop10Charts() {
          tipNexo.style.left = (event.pageX + 12) + "px";
          tipNexo.style.top = (event.pageY - 12) + "px";
       })
-      .on("mouseleave", function() { tipNexo.style.opacity = "0"; });
+      .on("mouseleave", function() { tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px"; });
 
   svgR.append("g").selectAll("g").data(DADOS_RADAR).enter().append("g")
       .attr("text-anchor", function(d) { return (xR(d.dia) + xR.bandwidth()/2 + Math.PI) % (2*Math.PI) < Math.PI ? "end" : "start"; })
@@ -1566,7 +1572,7 @@ function renderTop10Charts() {
           tipNexo.style.left = (event.pageX + 12) + "px";
           tipNexo.style.top = (event.pageY - 12) + "px";
       })
-      .on("mouseleave", function() { tipNexo.style.opacity = "0"; });
+      .on("mouseleave", function() { tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px"; });
 
   svgF.selectAll(".labelF")
       .data(stackData)
@@ -1652,7 +1658,7 @@ function renderTop10Charts() {
       .on("mouseleave", function(event, d) {
          d3.select(this).attr("fill", "url(#gradC)");
          d3.select(this.parentNode).select(".bullet-" + d.competicao.replace(/[^a-zA-Z0-9]/g, "")).attr("r", 5).attr("fill", "#B03020");
-         tipNexo.style.opacity = "0";
+         tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px";
       });
 
   svgC.selectAll(".bulletC")
@@ -1742,7 +1748,7 @@ function renderCalendario() {
          tipNexo.style.top = (event.pageY - 12) + "px";
       })
       .on("mouseleave", function() {
-         tipNexo.style.opacity = "0";
+         tipNexo.style.opacity = "0"; tipNexo.style.top = "-9999px";
          d3.select(this).attr("stroke", "none");
       });
 }
