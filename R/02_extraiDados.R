@@ -21,7 +21,14 @@ response <- httr::GET(
   httr::timeout(60)
 )
 
-content <- rvest::read_html(response)
+## lendo a resposta como binário bruto
+raw_content <- httr::content(response, as = "raw")
+
+## convertendo os bytes de ISO-8859-1 para UTF-8 corretamente
+utf8_content <- iconv(rawToChar(raw_content), from = "ISO-8859-1", to = "UTF-8")
+
+## agora o read_html lê o texto já corrigido
+content <- rvest::read_html(utf8_content)
 
 #response <- httr::GET(
 #  page,
@@ -35,7 +42,6 @@ content <- rvest::read_html(response)
 ## buscando a tabela base
 table <- rvest::html_table(content)
 classart <- table[[1]]
-
 
 # tratamento de links -----------------------------------------------------
 

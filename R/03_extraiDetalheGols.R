@@ -23,8 +23,12 @@ extrair_dados_jogador <- function(nome_jogador, link_atual) {
       httr::timeout(60)
     )
 
-    # lendo a page
-    pagina <- rvest::read_html(requisicao)
+    # lendo a página como raw e convertendo para UTF-8 manualmente
+    raw_content <- httr::content(requisicao, as = "raw")
+    utf8_content <- iconv(rawToChar(raw_content), from = "ISO-8859-1", to = "UTF-8")
+
+    # lendo a página com o texto convertido
+    pagina <- rvest::read_html(utf8_content)
 
     ## funcão interna para extrair cada blocao e separar os textos automaticamente
     extrair_coluna <- function(indice) {
