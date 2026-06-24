@@ -6,10 +6,13 @@ page <- "https://docs.ufpr.br/~mmsabino/sstatistics/gol_oficial.html"
 ## configurando o ScrapingBee
 api_key <- Sys.getenv("SCRAPINGBEE_KEY")
 
-api_url <- paste0(
-  "https://app.scrapingbee.com/api/v1/?api_key=", api_key,
-  "&url=", URLencode(page, reserved = TRUE),
-  "&render_js=false"
+if (api_key == "") {
+  stop("ERRO: A variável SCRAPINGBEE_KEY não foi encontrada pelo GitHub Actions!")
+}
+
+## montagem da url
+api_url <- glue::glue(
+  "https://app.scrapingbee.com/api/v1/?api_key={api_key}&url={URLencode(page, reserved = TRUE)}&render_js=false"
 )
 
 ## requisitando via proxy
