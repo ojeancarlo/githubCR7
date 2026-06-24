@@ -93,15 +93,20 @@ ano_fim <- max(lubridate::year(dados_dia$data))
 
 ## extraindo a data de atualização direto da página do Sabino Statistics
 url_atualizacao <- "https://docs.ufpr.br/~mmsabino/sstatistics/atualizacao.html"
+api_key <- Sys.getenv("SCRAPINGBEE_KEY")
 
-res_atualizacao <- httr::GET(
-  url_atualizacao,
-  httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
-  httr::timeout(60),
-  httr::config(connecttimeout = 60)
+api_url_atualizacao <- paste0(
+  "https://app.scrapingbee.com/api/v1/?api_key=", api_key,
+  "&url=", URLencode(url_atualizacao, reserved = TRUE),
+  "&render_js=false"
 )
 
-data_atualizacao_raw <- rvest::read_html(res_atualizacao) |>
+# Fazendo a requisição via Proxy e tratando o encoding
+res_atualizacao <- httr::GET(api_url_atualizacao, httr::timeout(60))
+raw_atualizacao <- httr::content(res_atualizacao, as = "raw")
+utf8_atualizacao <- iconv(rawToChar(raw_atualizacao), from = "ISO-8859-1", to = "UTF-8")
+
+data_atualizacao_raw <- rvest::read_html(utf8_atualizacao) |>
   rvest::html_text() |>
   stringr::str_extract("\\d{1,2}[./-]\\d{1,2}[./-]\\d{2,4}")
 
