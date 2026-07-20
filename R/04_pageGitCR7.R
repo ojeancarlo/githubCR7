@@ -21,6 +21,14 @@ base_cr7 <- dbgols |>
     )
   )
 
+## preparando os dados da tabela de detalhes (aba Lista de Gols)
+tabela_detalhes <- base_cr7 |>
+  dplyr::arrange(dplyr::desc(data_limpa)) |>
+  dplyr::select(data_str = data_limpa, partida, clube, adversario, competicao, gols) |>
+  dplyr::mutate(
+    data_str = format(data_str, "%d/%m/%Y"),
+    adversario = stringr::str_to_title(adversario)
+  )
 
 # construindo as estatísticas ---------------------------------------------
 
@@ -91,7 +99,7 @@ if(length(semanas_com_gol) > 0) {
 ano_inicio <- min(lubridate::year(dados_dia$data))
 ano_fim <- max(lubridate::year(dados_dia$data))
 
-## extraindo a data de atualização direto da página do Sabino Statistics
+## extraindo a data de atualização via Proxy
 url_atualizacao <- "https://docs.ufpr.br/~mmsabino/sstatistics/atualizacao.html"
 api_key <- Sys.getenv("SCRAPINGBEE_KEY")
 
@@ -485,7 +493,8 @@ listas_df <- list(
   dias_semana = dias_semana_comp,
   primeiro_gol_competicao = primeiro_gol_competicao,
   gols_por_comp = gols_por_comp,
-  calendario_aniversario = grid_calendario
+  calendario_aniversario = grid_calendario,
+  tabela_detalhes = tabela_detalhes
 )
 
 ## converter tudo para json
@@ -637,6 +646,16 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
   .footer a { color: var(--text-muted); text-decoration: none; border-bottom: 1px solid var(--lines); }
   .footer a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
+  /* Estilos para a Aba de Detalhes (Tabela e Exportação) */
+  .table-container { width: 100%; max-height: 600px; overflow-y: auto; overflow-x: auto; margin-top: 24px; border: 1px solid var(--lines); border-radius: 8px; }
+  .cr7-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+  .cr7-table th { background: #F8F7F2; position: sticky; top: 0; padding: 16px; font-weight: 700; color: #111; border-bottom: 2px solid var(--lines); white-space: nowrap; font-family: "Inter", sans-serif; z-index: 10; }
+  .cr7-table td { padding: 14px 16px; border-bottom: 1px solid var(--lines); color: var(--text-muted); }
+  .cr7-table tbody tr:hover { background-color: #F8F7F2; transition: background 0.2s; }
+
+  .btn-export { display: inline-flex; align-items: center; gap: 8px; background: #111; color: #fff; padding: 12px 24px; border-radius: 6px; font-family: "Inter", sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: background 0.2s; }
+  .btn-export:hover { background: var(--accent); }
+
   @media (max-width: 768px) { .header-wrapper { flex-direction: column-reverse; align-items: flex-start; } .header-photo { width: 100px; height: 100px; } main { padding: 0 20px; } .article-container { padding-top: 40px; } .dash-row { flex-direction: column; gap: 40px; } }
 </style>
 </head>
@@ -720,6 +739,7 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
     <button class="tab-link active" onclick="switchTab(event, 'aba-cr7')">GitHub do CR7</button>
     <button class="tab-link" onclick="switchTab(event, 'aba-top10')">Análises Gerais</button>
     <button class="tab-link" onclick="switchTab(event, 'aba-calendario')">Calendário CR7</button>
+    <button class="tab-link" onclick="switchTab(event, 'aba-lista')">Lista de Gols</button>
   </div>
 
   <div id="aba-cr7" class="tab-panel active">
@@ -891,6 +911,37 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
     <div class="nexo-box" id="nexo-calendario"></div>
   </div>
 
+  <div id="aba-lista" class="tab-panel">
+    <div class="header-wrapper" style="margin-bottom: 24px; align-items: flex-end;">
+      <div>
+        <div class="nexo-title">Raio-X Completo de Gols</div>
+        <div class="nexo-subtitle" style="margin-bottom: 0;">O registro tabular de todas as vezes em que a rede balançou.<br>Você pode baixar a base de dados completa clicando no botão ao lado.</div>
+      </div>
+      <button class="btn-export" onclick="exportarCSV('gols_cr7.csv')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        Baixar Dados (CSV)
+      </button>
+    </div>
+
+    <div class="table-container">
+      <table class="cr7-table" id="detalhes-tabela">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Partida</th>
+            <th>Clube/Seleção</th>
+            <th>Adversário</th>
+            <th>Competição</th>
+            <th style="text-align: center;">Gols</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- As linhas serão inseridas dinamicamente pelo Javascript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <footer class="footer">
     Desenvolvido por <a href="https://github.com/ojeancarlo/" target="_blank">Jean Carlo da Silva</a> usando R e D3.js.<br/>
     Fonte de dados: <a href="https://docs.ufpr.br/~mmsabino/sstatistics/" target="_blank"> Docs UFPr - Sabino Statistics</a>.
@@ -938,6 +989,7 @@ var DADOS_RADAR = <<jsons$dias_semana>>;
 var PRIMEIROS_GOLS = <<jsons$primeiro_gol_competicao>>;
 var GOLS_POR_COMP = <<jsons$gols_por_comp>>;
 var DADOS_CALENDARIO = <<jsons$calendario_aniversario>>;
+var TABELA_DETALHES = <<jsons$tabela_detalhes>>;
 
 var marcosMap = {};
 MARCOS.forEach(function(m) { marcosMap[m.data_str] = m; });
@@ -1758,8 +1810,58 @@ function renderCalendario() {
       });
 }
 
+function renderTabelaDetalhes() {
+  var tbody = document.querySelector("#detalhes-tabela tbody");
+  tbody.innerHTML = "";
+
+  TABELA_DETALHES.forEach(function(d) {
+    var tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="white-space: nowrap;">${d.data_str}</td>
+      <td style="color: #111; font-weight: 500;">${d.partida}</td>
+      <td>${d.clube}</td>
+      <td>${d.adversario}</td>
+      <td>${d.competicao}</td>
+      <td style="text-align: center; font-weight: 900; color: var(--accent); font-family: 'Playfair Display', serif; font-size: 16px;">${d.gols}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function exportarCSV(filename) {
+  var csv = [];
+  // Cabeçalho
+  csv.push("Data,Partida,Clube,Adversario,Competicao,Gols");
+
+  // Linhas
+  TABELA_DETALHES.forEach(function(d) {
+    // Escapar aspas duplas caso existam e colocar os textos entre aspas para evitar quebra no CSV por causa de vírgulas
+    var row = [
+      d.data_str,
+      '"' + (d.partida || "").replace(/"/g, '""') + '"',
+      '"' + (d.clube || "").replace(/"/g, '""') + '"',
+      '"' + (d.adversario || "").replace(/"/g, '""') + '"',
+      '"' + (d.competicao || "").replace(/"/g, '""') + '"',
+      d.gols
+    ];
+    csv.push(row.join(","));
+  });
+
+  // \uFEFF é o BOM (Byte Order Mark). Ele garante que o Excel identifique o arquivo como UTF-8 e não quebre a acentuação.
+  var csvFile = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+
+  var downloadLink = document.createElement("a");
+  downloadLink.download = filename;
+  downloadLink.href = window.URL.createObjectURL(csvFile);
+  downloadLink.style.display = "none";
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+}
+
 renderTop10Charts();
 renderCalendario();
+renderTabelaDetalhes();
 </script>
 </body>
 </html>
