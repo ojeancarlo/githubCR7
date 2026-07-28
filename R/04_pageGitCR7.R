@@ -99,7 +99,7 @@ if(length(semanas_com_gol) > 0) {
 ano_inicio <- min(lubridate::year(dados_dia$data))
 ano_fim <- max(lubridate::year(dados_dia$data))
 
-## extraindo a data de atualização via Proxy
+## extraindo a data de atualização via proxy
 url_atualizacao <- "https://docs.ufpr.br/~mmsabino/sstatistics/atualizacao.html"
 api_key <- Sys.getenv("SCRAPINGBEE_KEY")
 
@@ -109,7 +109,7 @@ api_url_atualizacao <- paste0(
   "&render_js=false"
 )
 
-# Fazendo a requisição via Proxy e tratando o encoding
+## fazendo a requisição via proxy e tratando o encoding
 res_atualizacao <- httr::GET(api_url_atualizacao, httr::timeout(60))
 raw_atualizacao <- httr::content(res_atualizacao, as = "raw")
 utf8_atualizacao <- iconv(rawToChar(raw_atualizacao), from = "ISO-8859-1", to = "UTF-8")
@@ -118,7 +118,7 @@ data_atualizacao_raw <- rvest::read_html(utf8_atualizacao) |>
   rvest::html_text() |>
   stringr::str_extract("\\d{1,2}[./-]\\d{1,2}[./-]\\d{2,4}")
 
-# Substitui os pontos por barras para manter o visual bonito no painel (01/06/2026)
+## substitui os pontos por barras para manter o visual bonito no painel
 data_atualizacao <- format(lubridate::dmy(data_atualizacao_raw), "%d/%m/%Y")
 
 ## construindo o dataframe do calendário completo
@@ -520,7 +520,7 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root { --bg: #FDFCF8; --text-main: #111111; --text-muted: #666666; --lines: #E5E5E5; --accent: #B03020; --gold: #C59B27; }
 
-  /* ajustando o item para não empurrar espaço em branco */
+  /* ajustando o item para nao empurrar espaco em branco */
   body {
     font-family: "Inter", -apple-system, sans-serif;
     background: var(--bg);
@@ -580,7 +580,7 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
 
   .team-cards-container { display: flex; flex-wrap: wrap; gap: 24px; width: 100%; }
 
-  /* ajustando o flex bord para adequar o team-card*/
+  /* ajustando o flex bord para adequar o team-card */
   .team-card { background: transparent; border: 1px solid var(--lines); border-radius: 8px; padding: 24px 32px; flex: 1; min-width: 320px; box-shadow: none; display: flex; flex-direction: column; }
 
   .team-card-title { font-size: 12px; font-weight: 700; color: #111; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
@@ -602,7 +602,7 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
   .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
   .legend-box { width: 12px; height: 12px; border-radius: 2px; }
 
-  /* containers fluídos */
+  /* containers fluidos */
   #heatmap-root, .nexo-box { width: 100%; overflow-x: auto; overflow-y: hidden; padding-bottom: 15px; -webkit-overflow-scrolling: touch; }
   #heatmap-root svg, .nexo-box svg { display: block; width: 100%; height: auto; min-width: 960px; }
 
@@ -641,13 +641,13 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
   .pg-item-score { font-size: 9.5px; font-weight: 400; color: #333; margin-bottom: 2px; line-height: 1.2; width: 100%; word-wrap: break-word; }
   .pg-item-date { font-size: 8px; color: var(--text-muted); font-family: "Inter", sans-serif; }
 
-  /* margens e tipografia do rodapé final */
+  /* margens e tipografia do rodape final */
   .footer { width: 100%; margin: 20px 0 20px; padding-top: 20px; border-top: 1px solid var(--lines); font-size: 12px; color: var(--text-muted); text-align: center; }
   .footer a { color: var(--text-muted); text-decoration: none; border-bottom: 1px solid var(--lines); }
   .footer a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* Estilos para a Aba de Detalhes (Tabela e Exportação) */
-  .table-container { width: 100%; max-height: 600px; overflow-y: auto; overflow-x: auto; margin-top: 24px; border: 1px solid var(--lines); border-radius: 8px; }
+  /* estilos para a aba de detalhes e exportacao */
+  .table-container { width: 100%; max-height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--lines); border-radius: 8px; }
   .cr7-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
   .cr7-table th { background: #F8F7F2; position: sticky; top: 0; padding: 16px; font-weight: 700; color: #111; border-bottom: 2px solid var(--lines); white-space: nowrap; font-family: "Inter", sans-serif; z-index: 10; }
   .cr7-table td { padding: 14px 16px; border-bottom: 1px solid var(--lines); color: var(--text-muted); }
@@ -655,6 +655,12 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
 
   .btn-export { display: inline-flex; align-items: center; gap: 8px; background: #111; color: #fff; padding: 12px 24px; border-radius: 6px; font-family: "Inter", sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: background 0.2s; }
   .btn-export:hover { background: var(--accent); }
+
+  .filters-container { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; background: #F8F7F2; padding: 12px; border-radius: 6px; border: 1px solid var(--lines); align-items: center; }
+  .filter-input { flex: 1; min-width: 130px; padding: 8px 12px; font-family: "Inter", sans-serif; font-size: 12px; border: 1px solid #d1d1d1; border-radius: 4px; outline: none; transition: border 0.2s; }
+  .filter-input:focus { border-color: var(--accent); }
+  .btn-clear { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; white-space: nowrap; }
+  .btn-clear:hover { background: var(--text-muted); color: #fff; }
 
   @media (max-width: 768px) { .header-wrapper { flex-direction: column-reverse; align-items: flex-start; } .header-photo { width: 100px; height: 100px; } main { padding: 0 20px; } .article-container { padding-top: 40px; } .dash-row { flex-direction: column; gap: 40px; } }
 </style>
@@ -923,6 +929,18 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
       </button>
     </div>
 
+    <div class="filters-container">
+      <input type="text" id="filtro-data" class="filter-input" placeholder="Data..." onkeyup="aplicarFiltros()">
+      <input type="text" id="filtro-partida" class="filter-input" placeholder="Partida..." onkeyup="aplicarFiltros()">
+      <select id="filtro-clube" class="filter-input" onchange="aplicarFiltros()">
+        <option value="">Todos os Clubes</option>
+      </select>
+      <input type="text" id="filtro-adv" class="filter-input" placeholder="Adversário..." onkeyup="aplicarFiltros()">
+      <input type="text" id="filtro-comp" class="filter-input" placeholder="Competição..." onkeyup="aplicarFiltros()">
+      <input type="text" id="filtro-gols" class="filter-input" placeholder="Gols..." onkeyup="aplicarFiltros()" style="max-width: 80px;">
+      <button class="btn-clear" onclick="limparFiltros()">Limpar Filtros</button>
+    </div>
+
     <div class="table-container">
       <table class="cr7-table" id="detalhes-tabela">
         <thead>
@@ -936,7 +954,7 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
           </tr>
         </thead>
         <tbody>
-          <!-- As linhas serão inseridas dinamicamente pelo Javascript -->
+          <!-- as linhas serao inseridas dinamicamente via js -->
         </tbody>
       </table>
     </div>
@@ -973,7 +991,7 @@ function switchTab(evt, tabId) {
   evt.currentTarget.classList.add('active');
   }
 
-// variáveis criadas com base nos maps para coletar os jsons
+// variaveis criadas com base nos maps para coletar os jsons
 var DADOS = <<jsons$dados>>;
 var GOLS_CLUBE = <<jsons$gols_clube>>;
 var GOLS_SELECAO = <<jsons$gols_selecao>>;
@@ -990,6 +1008,7 @@ var PRIMEIROS_GOLS = <<jsons$primeiro_gol_competicao>>;
 var GOLS_POR_COMP = <<jsons$gols_por_comp>>;
 var DADOS_CALENDARIO = <<jsons$calendario_aniversario>>;
 var TABELA_DETALHES = <<jsons$tabela_detalhes>>;
+var filteredData = TABELA_DETALHES;
 
 var marcosMap = {};
 MARCOS.forEach(function(m) { marcosMap[m.data_str] = m; });
@@ -1061,7 +1080,7 @@ buildTeamGrids(GOLS_SELECAO, "selecao-grid");
   var container  = document.getElementById("primeiros-gols-grid");
   if (!container) return;
 
-  // agrupa os dados pela categoria das competições
+  // agrupa os dados pela categoria das competicoes
   var groups = {
      "Ligas Nacionais": [],
      "Copas Nacionais": [],
@@ -1144,7 +1163,7 @@ buildTeamGrids(GOLS_SELECAO, "selecao-grid");
   }
 })();
 
-// geração do heatmap e minigráfico
+// geracao do heatmap e minigrafico
 
 var CORES = d3.scaleThreshold().domain([1,2,3,4,5]).range(["#F2EFEB","#B3C0D1","#E07B6A","#C95240","#B03020","#901A1E"]);
 var CELL = 12, GAP = 3, CELL_STEP = CELL + GAP;
@@ -1810,11 +1829,56 @@ function renderCalendario() {
       });
 }
 
+function popularFiltros() {
+  var clubes = [...new Set(TABELA_DETALHES.map(function(d) { return d.clube; }))].sort();
+  var selClube = document.getElementById("filtro-clube");
+  clubes.forEach(function(c) {
+    var opt = document.createElement("option");
+    opt.value = c; opt.text = c;
+    selClube.appendChild(opt);
+  });
+}
+
+function aplicarFiltros() {
+  var fData = document.getElementById("filtro-data").value.toLowerCase();
+  var fPartida = document.getElementById("filtro-partida").value.toLowerCase();
+  var fClube = document.getElementById("filtro-clube").value.toLowerCase();
+  var fAdv = document.getElementById("filtro-adv").value.toLowerCase();
+  var fComp = document.getElementById("filtro-comp").value.toLowerCase();
+  var fGols = document.getElementById("filtro-gols").value.toLowerCase();
+
+  filteredData = TABELA_DETALHES.filter(function(d) {
+    return (fData === "" || d.data_str.toLowerCase().includes(fData)) &&
+           (fPartida === "" || d.partida.toLowerCase().includes(fPartida)) &&
+           (fClube === "" || d.clube.toLowerCase() === fClube) &&
+           (fAdv === "" || d.adversario.toLowerCase().includes(fAdv)) &&
+           (fComp === "" || d.competicao.toLowerCase().includes(fComp)) &&
+           (fGols === "" || d.gols.toString().toLowerCase().includes(fGols));
+  });
+
+  renderTabelaDetalhes();
+}
+
+function limparFiltros() {
+  document.getElementById("filtro-data").value = "";
+  document.getElementById("filtro-partida").value = "";
+  document.getElementById("filtro-clube").value = "";
+  document.getElementById("filtro-adv").value = "";
+  document.getElementById("filtro-comp").value = "";
+  document.getElementById("filtro-gols").value = "";
+  aplicarFiltros();
+}
+
 function renderTabelaDetalhes() {
   var tbody = document.querySelector("#detalhes-tabela tbody");
   tbody.innerHTML = "";
 
-  TABELA_DETALHES.forEach(function(d) {
+  if(filteredData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px;">Nenhum gol encontrado com esses filtros.</td></tr>`;
+    return;
+  }
+
+  filteredData.forEach(function(d) {
     var tr = document.createElement("tr");
     tr.innerHTML = `
       <td style="white-space: nowrap;">${d.data_str}</td>
@@ -1830,12 +1894,11 @@ function renderTabelaDetalhes() {
 
 function exportarCSV(filename) {
   var csv = [];
-  // Cabeçalho
+  // cabecalho
   csv.push("Data,Partida,Clube,Adversario,Competicao,Gols");
 
-  // Linhas
-  TABELA_DETALHES.forEach(function(d) {
-    // Escapar aspas duplas caso existam e colocar os textos entre aspas para evitar quebra no CSV por causa de vírgulas
+  // linhas baseadas nos dados filtrados
+  filteredData.forEach(function(d) {
     var row = [
       d.data_str,
       '"' + (d.partida || "").replace(/"/g, '""') + '"',
@@ -1847,7 +1910,7 @@ function exportarCSV(filename) {
     csv.push(row.join(","));
   });
 
-  // \uFEFF é o BOM (Byte Order Mark). Ele garante que o Excel identifique o arquivo como UTF-8 e não quebre a acentuação.
+  // garantindo o utf-8 no csv para nao quebrar acentuacao no excel
   var csvFile = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
 
   var downloadLink = document.createElement("a");
@@ -1861,7 +1924,10 @@ function exportarCSV(filename) {
 
 renderTop10Charts();
 renderCalendario();
-renderTabelaDetalhes();
+
+// inicia os filtros e renderiza a tabela
+popularFiltros();
+aplicarFiltros();
 </script>
 </body>
 </html>
