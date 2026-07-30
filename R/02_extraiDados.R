@@ -1,24 +1,14 @@
 # setup inicial -----------------------------------------------------------
 
-## definindo a pagina e fazendo a requisicao com disfarce de navegador e timeout estendido
+## definindo a pagina
 page <- "https://docs.ufpr.br/~mmsabino/sstatistics/gol_oficial.html"
 
-## configurando o ScrapingBee
-api_key <- Sys.getenv("SCRAPINGBEE_KEY")
-
-if (api_key == "") {
-  stop("ERRO: A variável SCRAPINGBEE_KEY não foi encontrada pelo GitHub Actions!")
-}
-
-## montagem da url
-api_url <- glue::glue(
-  "https://app.scrapingbee.com/api/v1/?api_key={api_key}&url={URLencode(page, reserved = TRUE)}&render_js=false"
-)
-
-## requisitando via proxy
+## fazendo a requisição DIRETA simulando um navegador real (sem proxy)
 response <- httr::GET(
-  api_url,
-  httr::timeout(60)
+  page,
+  httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+  httr::timeout(60),
+  httr::config(ssl_verifypeer = FALSE)
 )
 
 ## lendo a resposta como binário bruto
@@ -29,15 +19,6 @@ utf8_content <- iconv(rawToChar(raw_content), from = "ISO-8859-1", to = "UTF-8")
 
 ## agora o read_html lê o texto já corrigido
 content <- rvest::read_html(utf8_content)
-
-#response <- httr::GET(
-#  page,
-#  httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
-#  httr::timeout(60),
-#  httr::config(connecttimeout = 60)
-#)
-
-#content <- rvest::read_html(response)
 
 ## buscando a tabela base
 table <- rvest::html_table(content)
@@ -132,9 +113,3 @@ tabela_final_limpa <- classart |>
 
   ## organizando a visao final
   dplyr::select(posicao, jogador, pais_origem, gols, link_scraping)
-
-
-# resultado final ---------------------------------------------------------
-
-## extraindo o recorte da tabela final
-head(tabela_final_limpa)

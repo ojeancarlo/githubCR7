@@ -21,7 +21,7 @@ base_cr7 <- dbgols |>
     )
   )
 
-## preparando os dados da tabela de detalhes (aba Lista de Gols)
+## preparando os dados da tabela de detalhes para a aba de listagem
 tabela_detalhes <- base_cr7 |>
   dplyr::arrange(dplyr::desc(data_limpa)) |>
   dplyr::select(data_str = data_limpa, partida, clube, adversario, competicao, gols) |>
@@ -99,18 +99,17 @@ if(length(semanas_com_gol) > 0) {
 ano_inicio <- min(lubridate::year(dados_dia$data))
 ano_fim <- max(lubridate::year(dados_dia$data))
 
-## extraindo a data de atualização via proxy
+## extraindo a data de atualização diretamente sem proxy
 url_atualizacao <- "https://docs.ufpr.br/~mmsabino/sstatistics/atualizacao.html"
-api_key <- Sys.getenv("SCRAPINGBEE_KEY")
 
-api_url_atualizacao <- paste0(
-  "https://app.scrapingbee.com/api/v1/?api_key=", api_key,
-  "&url=", URLencode(url_atualizacao, reserved = TRUE),
-  "&render_js=false"
+## fazendo a requisição direta simulando um navegador real
+res_atualizacao <- httr::GET(
+  url_atualizacao,
+  httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+  httr::timeout(60),
+  httr::config(ssl_verifypeer = FALSE)
 )
 
-## fazendo a requisição via proxy e tratando o encoding
-res_atualizacao <- httr::GET(api_url_atualizacao, httr::timeout(60))
 raw_atualizacao <- httr::content(res_atualizacao, as = "raw")
 utf8_atualizacao <- iconv(rawToChar(raw_atualizacao), from = "ISO-8859-1", to = "UTF-8")
 

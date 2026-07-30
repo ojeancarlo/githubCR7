@@ -1,4 +1,3 @@
-
 # funcao de extracao ------------------------------------------------------
 
 ## construindo a funcão em modo linha a linha
@@ -7,20 +6,12 @@ extrair_dados_jogador <- function(nome_jogador, link_atual) {
 
   tryCatch({
 
-    ## busca a chave configurada no GitHub Secrets
-    api_key <- Sys.getenv("SCRAPINGBEE_KEY")
-
-    ## URL do Proxy
-    api_url <- paste0(
-      "https://app.scrapingbee.com/api/v1/?api_key=", api_key,
-      "&url=", URLencode(link_atual, reserved = TRUE),
-      "&render_js=false"
-    )
-
-    ## requisição via Proxy
+    ## requisição DIRETA simulando um navegador real (sem proxy instavel)
     requisicao <- httr::GET(
-      api_url,
-      httr::timeout(60)
+      link_atual,
+      httr::user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+      httr::timeout(60),
+      httr::config(ssl_verifypeer = FALSE)
     )
 
     # lendo a página como raw e convertendo para UTF-8 manualmente
