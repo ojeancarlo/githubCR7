@@ -229,13 +229,26 @@ gols_por_ano <- base_cr7 |>
 ano_menos_gols <- gols_por_ano$ano[1]; gols_ano_menos <- gols_por_ano$gols[1]
 ano_mais_gols  <- gols_por_ano$ano[nrow(gols_por_ano)]; gols_ano_mais  <- gols_por_ano$gols[nrow(gols_por_ano)]
 
-## mapeando o top 3 de maiores vítimas em números absolutos
-vitimas_abs_top3 <- base_cr7 |>
+## mapeando todas as vítimas (clubes) blindando contra NAs e arrumando textos
+todas_vitimas_clubes <- base_cr7 |>
   dplyr::filter(clube != "Portugal") |>
+  dplyr::mutate(adversario = stringr::str_to_title(adversario)) |>
+  dplyr::filter(!is.na(adversario) & adversario != "") |>
   dplyr::group_by(adversario) |>
   dplyr::summarise(gols = sum(gols, na.rm = TRUE)) |>
-  dplyr::arrange(dplyr::desc(gols)) |>
-  dplyr::slice(1:3)
+  dplyr::arrange(dplyr::desc(gols), adversario)
+
+## mapeando todas as vítimas (seleções) blindando contra NAs e arrumando textos
+todas_vitimas_selecoes <- base_cr7 |>
+  dplyr::filter(clube == "Portugal") |>
+  dplyr::mutate(adversario = stringr::str_to_title(adversario)) |>
+  dplyr::filter(!is.na(adversario) & adversario != "") |>
+  dplyr::group_by(adversario) |>
+  dplyr::summarise(gols = sum(gols, na.rm = TRUE)) |>
+  dplyr::arrange(dplyr::desc(gols), adversario)
+
+## mapeando o top 3 de maiores vítimas em números absolutos
+vitimas_abs_top3 <- todas_vitimas_clubes |> dplyr::slice(1:3)
 
 vitimas_abs_html <- paste0(
   "<div style='display:flex; flex-direction:column;'>",
@@ -247,6 +260,7 @@ vitimas_abs_html <- paste0(
 ## mapeando o top 3 de maiores vítimas em média de gols
 vitimas_rel_top3 <- base_cr7 |>
   dplyr::filter(clube != "Portugal") |>
+  dplyr::mutate(adversario = stringr::str_to_title(adversario)) |>
   dplyr::group_by(adversario) |>
   dplyr::summarise(gols = sum(gols, na.rm = TRUE), jogos = dplyr::n()) |>
   dplyr::filter(jogos >= 5) |>
@@ -262,12 +276,7 @@ vitimas_rel_html <- paste0(
 )
 
 ## mapeando o top 3 de maiores vítimas pela seleção
-vitimas_selecao_top3 <- base_cr7 |>
-  dplyr::filter(clube == "Portugal") |>
-  dplyr::group_by(adversario) |>
-  dplyr::summarise(gols = sum(gols, na.rm = TRUE)) |>
-  dplyr::arrange(dplyr::desc(gols)) |>
-  dplyr::slice(1:3)
+vitimas_selecao_top3 <- todas_vitimas_selecoes |> dplyr::slice(1:3)
 
 vitimas_selecao_html <- paste0(
   "<div style='display:flex; flex-direction:column;'>",
@@ -493,7 +502,9 @@ listas_df <- list(
   primeiro_gol_competicao = primeiro_gol_competicao,
   gols_por_comp = gols_por_comp,
   calendario_aniversario = grid_calendario,
-  tabela_detalhes = tabela_detalhes
+  tabela_detalhes = tabela_detalhes,
+  vitimas_clubes = todas_vitimas_clubes,
+  vitimas_selecoes = todas_vitimas_selecoes
 )
 
 ## converter tudo para json
@@ -661,6 +672,17 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
   .btn-clear { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; white-space: nowrap; }
   .btn-clear:hover { background: var(--text-muted); color: #fff; }
 
+  /* estilos para a aba vitimas */
+  .vitimas-grid { display: flex; flex-wrap: wrap; gap: 10px; max-height: 500px; overflow-y: auto; padding-right: 10px; align-content: flex-start; }
+  .vitimas-grid::-webkit-scrollbar { width: 6px; }
+  .vitimas-grid::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+  .vitimas-grid::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+  .vitimas-grid::-webkit-scrollbar-thumb:hover { background: #aaa; }
+  .vitima-chip { display: flex; justify-content: space-between; align-items: center; background: #F8F7F2; border: 1px solid var(--lines); padding: 8px 12px; border-radius: 6px; font-size: 12px; width: calc(50% - 5px); flex-grow: 1; min-width: 160px; transition: border 0.2s;}
+  .vitima-chip:hover { border-color: var(--accent); }
+  .vitima-nome { font-weight: 600; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 12px; font-family: "Inter", sans-serif; }
+  .vitima-gols { font-family: "Playfair Display", serif; font-weight: 900; color: var(--accent); font-size: 16px; }
+
   @media (max-width: 768px) { .header-wrapper { flex-direction: column-reverse; align-items: flex-start; } .header-photo { width: 100px; height: 100px; } main { padding: 0 20px; } .article-container { padding-top: 40px; } .dash-row { flex-direction: column; gap: 40px; } }
 </style>
 </head>
@@ -744,6 +766,7 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
     <button class="tab-link active" onclick="switchTab(event, 'aba-cr7')">GitHub do CR7</button>
     <button class="tab-link" onclick="switchTab(event, 'aba-top10')">Análises Gerais</button>
     <button class="tab-link" onclick="switchTab(event, 'aba-calendario')">Calendário CR7</button>
+    <button class="tab-link" onclick="switchTab(event, 'aba-vitimas')">Todas as Vítimas</button>
     <button class="tab-link" onclick="switchTab(event, 'aba-lista')">Lista de Gols</button>
   </div>
 
@@ -916,6 +939,28 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
     <div class="nexo-box" id="nexo-calendario"></div>
   </div>
 
+  <div id="aba-vitimas" class="tab-panel">
+    <div class="nexo-title">A Galeria de Vítimas</div>
+    <div class="nexo-subtitle">O catálogo completo de todos os clubes e seleções que já sofreram gols de Cristiano Ronaldo ao longo de sua trajetória.</div>
+
+    <div class="filters-container" style="margin-top: 24px;">
+      <input type="text" id="filtro-vitimas" class="filter-input" placeholder="Buscar por clube ou seleção..." onkeyup="filtrarVitimas()">
+    </div>
+
+    <div class="dash-row" style="margin-top: 24px;">
+      <div class="team-cards-container">
+        <div class="team-card" style="flex: 1; min-width: 45%;">
+          <div class="team-card-title title-clube">Clubes Vítimas (<span id="count-clubes">0</span>)</div>
+          <div id="grid-vitimas-clubes" class="vitimas-grid"></div>
+        </div>
+        <div class="team-card" style="flex: 1; min-width: 45%;">
+          <div class="team-card-title title-selecao">Seleções Vítimas (<span id="count-selecoes">0</span>)</div>
+          <div id="grid-vitimas-selecoes" class="vitimas-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="aba-lista" class="tab-panel">
     <div class="header-wrapper" style="margin-bottom: 24px; align-items: flex-end;">
       <div>
@@ -1007,6 +1052,8 @@ var PRIMEIROS_GOLS = <<jsons$primeiro_gol_competicao>>;
 var GOLS_POR_COMP = <<jsons$gols_por_comp>>;
 var DADOS_CALENDARIO = <<jsons$calendario_aniversario>>;
 var TABELA_DETALHES = <<jsons$tabela_detalhes>>;
+var VITIMAS_CLUBES = <<jsons$vitimas_clubes>>;
+var VITIMAS_SELECOES = <<jsons$vitimas_selecoes>>;
 var filteredData = TABELA_DETALHES;
 
 var marcosMap = {};
@@ -1891,6 +1938,45 @@ function renderTabelaDetalhes() {
   });
 }
 
+// salvando as posicoes de ranking antes de qualquer filtro
+VITIMAS_CLUBES.forEach(function(d, i) { d.posicao_ranking = i + 1; });
+VITIMAS_SELECOES.forEach(function(d, i) { d.posicao_ranking = i + 1; });
+
+function renderVitimas(termoBusca) {
+  var termo = termoBusca ? termoBusca.toLowerCase() : "";
+
+  var clubesFiltrados = VITIMAS_CLUBES.filter(function(d) {
+     return (d.adversario || "").toLowerCase().includes(termo);
+  });
+  document.getElementById("count-clubes").textContent = clubesFiltrados.length;
+  var gridClubes = document.getElementById("grid-vitimas-clubes");
+  gridClubes.innerHTML = "";
+  clubesFiltrados.forEach(function(d) {
+     var div = document.createElement("div");
+     div.className = "vitima-chip";
+     div.innerHTML = `<div style="display:flex; align-items:center;"><span style="color:var(--text-muted); font-weight:600; font-size:10px; margin-right:8px; width:22px;">${d.posicao_ranking}º</span><span class="vitima-nome" title="${d.adversario || 'Desconhecido'}">${d.adversario || 'Desconhecido'}</span></div><span class="vitima-gols">${d.gols}</span>`;
+     gridClubes.appendChild(div);
+  });
+
+  var selecoesFiltradas = VITIMAS_SELECOES.filter(function(d) {
+     return (d.adversario || "").toLowerCase().includes(termo);
+  });
+  document.getElementById("count-selecoes").textContent = selecoesFiltradas.length;
+  var gridSelecoes = document.getElementById("grid-vitimas-selecoes");
+  gridSelecoes.innerHTML = "";
+  selecoesFiltradas.forEach(function(d) {
+     var div = document.createElement("div");
+     div.className = "vitima-chip";
+     div.innerHTML = `<div style="display:flex; align-items:center;"><span style="color:var(--text-muted); font-weight:600; font-size:10px; margin-right:8px; width:22px;">${d.posicao_ranking}º</span><span class="vitima-nome" title="${d.adversario || 'Desconhecido'}">${d.adversario || 'Desconhecido'}</span></div><span class="vitima-gols">${d.gols}</span>`;
+     gridSelecoes.appendChild(div);
+  });
+}
+
+function filtrarVitimas() {
+  var busca = document.getElementById("filtro-vitimas").value;
+  renderVitimas(busca);
+}
+
 function exportarCSV(filename) {
   var csv = [];
   // cabecalho
@@ -1923,6 +2009,7 @@ function exportarCSV(filename) {
 
 renderTop10Charts();
 renderCalendario();
+renderVitimas(); // renderiza as vitimas na primeira carga sem filtro
 
 // inicia os filtros e renderiza a tabela
 popularFiltros();
