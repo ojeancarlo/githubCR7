@@ -1,13 +1,11 @@
+# carregamento de pacotes -------------------------------------------------
 
-# carregando os pacotes úteis para o projeto ------------------------------
-
+## pacotes essenciais para a nova esteira via Google Sheets
 library(dplyr)
-library(rvest)
-library(httr)
 library(stringr)
-library(purrr)
-library(tibble)
-library(lubridate)
 library(tidyr)
+library(lubridate)
+library(purrr)
+library(rlang)
 library(jsonlite)
 library(glue)
