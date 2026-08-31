@@ -14,8 +14,8 @@ message("Executando Passo 1: Extraindo a lista de artilheiros via 01_extraiDados
 source("./R/02_extraiDados.R", encoding = "UTF-8")
 
 ## extraindoos detalhes dos gols
-# message("Executando Passo 2: Buscando o detalhamento dos gols via 02_extraiDetalheGols")
-# source("./R/03_extraiDetalheGols.R", encoding = "UTF-8")
+message("Executando Passo 2: Buscando o detalhamento dos gols via 02_extraiDetalheGols")
+source("./R/03_extraiDetalheGols.R", encoding = "UTF-8")
 
 ## gerando painel interativo
 message("Executando Passo 3: Renderizando o relatório via 03_pageGitCR7")

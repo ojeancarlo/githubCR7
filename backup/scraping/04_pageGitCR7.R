@@ -99,8 +99,36 @@ if(length(semanas_com_gol) > 0) {
 ano_inicio <- min(lubridate::year(dados_dia$data))
 ano_fim <- max(lubridate::year(dados_dia$data))
 
-## definindo a data de atualizacao com base no ultimo gol registrado na planilha
-data_atualizacao <- format(max(base_cr7$data_limpa, na.rm = TRUE), "%d/%m/%Y")
+## extraindo a data de atualização via scrapeops
+url_atualizacao <- "https://docs.ufpr.br/~mmsabino/sstatistics/atualizacao.html"
+
+## resgatando a chave do ambiente
+api_key <- Sys.getenv("SCRAPEOPS_KEY")
+
+## validacao de seguranca da chave
+if (api_key == "") {
+  stop("Erro: Chave da API ScrapeOps nao encontrada. Verifique o .Renviron ou os Secrets.")
+}
+
+## montando a url do proxy com bypass de cloudflare
+api_url_atualizacao <- paste0(
+  "https://proxy.scrapeops.io/v1/?api_key=", api_key,
+  "&url=", URLencode(url_atualizacao, reserved = TRUE),
+  "&bypass=cloudflare"
+)
+
+## fazendo a requisicao
+res_atualizacao <- httr::GET(api_url_atualizacao, httr::timeout(60))
+
+raw_atualizacao <- httr::content(res_atualizacao, as = "raw")
+utf8_atualizacao <- iconv(rawToChar(raw_atualizacao), from = "ISO-8859-1", to = "UTF-8")
+
+data_atualizacao_raw <- rvest::read_html(utf8_atualizacao) |>
+  rvest::html_text() |>
+  stringr::str_extract("\\d{1,2}[./-]\\d{1,2}[./-]\\d{2,4}")
+
+## substitui os pontos por barras para manter o visual bonito no painel
+data_atualizacao <- format(lubridate::dmy(data_atualizacao_raw), "%d/%m/%Y")
 
 ## construindo o dataframe do calendário completo
 calendario <- tibble::tibble(
@@ -634,7 +662,7 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
   .pg-item-date { font-size: 8px; color: var(--text-muted); font-family: "Inter", sans-serif; }
 
   /* margens e tipografia do rodape final */
-  .footer { width: 100%; margin: 20px 0 20px; padding-top: 20px; border-top: 1px solid var(--lines); font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.8; }
+  .footer { width: 100%; margin: 20px 0 20px; padding-top: 20px; border-top: 1px solid var(--lines); font-size: 12px; color: var(--text-muted); text-align: center; }
   .footer a { color: var(--text-muted); text-decoration: none; border-bottom: 1px solid var(--lines); }
   .footer a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
@@ -848,7 +876,7 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
   <div id="aba-top10" class="tab-panel">
 
     <div class="nexo-title">A consistência do Top 10</div>
-    <div class="nexo-subtitle">Uma visão cronológica da letalidade dos maiores artilheiros da história. O gráfico alinha as temporadas do ano 1 até a aposentadoria (ou momento atual), onde cores mais quentes revelam o volume de gols marcados em cada período. <br><br><span style="color: var(--accent); font-weight: 600; font-size: 13px;">Nota técnica: Os dados dos demais artilheiros refletem o cenário até 21/04/2025 (data da última extração da fonte original). Apenas os números de Cristiano Ronaldo continuam sendo atualizados ativamente.</span></div>
+    <div class="nexo-subtitle">Uma visão cronológica da letalidade dos maiores artilheiros da história. O gráfico alinha as temporadas do ano 1 até a aposentadoria (ou momento atual), onde cores mais quentes revelam o volume de gols marcados em cada período.</div>
     <div class="nexo-box" id="nexo-heatmap"></div>
 
     <div class="nexo-title" style="margin-top: 50px;">A corrida pelos recordes</div>
@@ -980,15 +1008,14 @@ html_final <- glue::glue(.open = "<<", .close = ">>", r"---(
           </tr>
         </thead>
         <tbody>
-          <!-- as linhas serao inseridas dinamicamente via js -->
-        </tbody>
+          </tbody>
       </table>
     </div>
   </div>
 
   <footer class="footer">
     Desenvolvido por <a href="https://github.com/ojeancarlo/" target="_blank">Jean Carlo da Silva</a> usando R e D3.js.<br/>
-    <span style="display: inline-block; margin-top: 6px;">Fonte de dados: Histórico Sabino Statistics (posição em 21/04/2025) + Atualizações Manuais (CR7).</span>
+    Fonte de dados: <a href="https://docs.ufpr.br/~mmsabino/sstatistics/" target="_blank"> Docs UFPr - Sabino Statistics</a>.
   </footer>
 </main>
 
