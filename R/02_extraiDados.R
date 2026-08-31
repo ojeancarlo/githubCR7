@@ -82,9 +82,11 @@ df_paises <- tidyr::tibble(
 
 tabela_final_limpa <- classart |>
 
-  ## removendo os ruidos da tabela
-  dplyr::filter(!is.na(X1) & X1 != "Pos.") |>
-  dplyr::select(posicao = X1, jogador_info = X4) |>
+  ## selecionando pelo índice da coluna (1 e 4) para evitar erro de nomes automáticos
+  dplyr::select(posicao = 1, jogador_info = 4) |>
+
+  ## removendo os ruidos da tabela usando o nome que acabamos de atribuir
+  dplyr::filter(!is.na(posicao) & posicao != "Pos.") |>
 
   ## adequando as variaveis para facilitar o join
   dplyr::mutate(
