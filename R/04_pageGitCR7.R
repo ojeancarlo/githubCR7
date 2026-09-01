@@ -4,11 +4,12 @@
 base_cr7 <- dbgols |>
   dplyr::filter(jogador == "Cristiano Ronaldo", !is.na(data)) |>
   dplyr::mutate(
+    ## padroniza o visual do placar para sempre ter espaços (ex: 2 x 1)
+    partida = stringr::str_replace(partida, "(?<=\\d)\\s*[xX]\\s*(?=\\d)", " x "),
     data_limpa = as.Date(data),
     time_cr7   = stringr::str_trim(stringr::str_extract(partida, "^(.+?)(?=\\s+\\d+\\s*[xX])")),
-    adversario = stringr::str_trim(stringr::str_extract(partida, "(?<=x\\s\\d{1,2}\\s)(.+)$")),
+    adversario = stringr::str_trim(stringr::str_replace(partida, "^.+?\\s+\\d+\\s*[xX]\\s*\\d+\\s*", "")),
     time_lower = stringr::str_to_lower(time_cr7),
-
     ## agrupando e padronizando os nomes dos clubes
     clube = dplyr::case_when(
       stringr::str_detect(time_lower, "sporting") ~ "Sporting CP",
