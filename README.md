@@ -26,7 +26,7 @@ A aplicação foi construída com um fluxo focado na análise de dados: todo o p
     * Gráfico de Radar comparando o desempenho por dia da semana (CR7 vs. Rivais).
     * Distribuição de gols por ciclo de vida (*Início, Auge e Maturidade*).
     * Barra de progresso customizada com a letalidade do jogador por competição.
-* **UI/UX inimalista:** Interface responsiva desenhada nativamente com CSS, otimizada para Desktop e Mobile através de *media queries* e *flexbox*.
+* **UI/UX minimalista:** Interface responsiva desenhada nativamente com CSS, otimizada para Desktop e Mobile através de *media queries* e *flexbox*.
 
 ---
 
